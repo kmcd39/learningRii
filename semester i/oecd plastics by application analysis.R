@@ -3,13 +3,15 @@
 
 library(tidyverse)
 # from
+# https://www.oecd-ilibrary.org/environment/data/global-plastic-outlook_c0821f81-en
 trash <-
-  read.csv("OECD,DF_PLASTIC_USE_10,+all.csv") %>%
+  read.csv("local-datasets/OECD,DF_PLASTIC_USE_10,+all.csv") %>%
   tibble()
 
 trash %>% count(STRUCTURE)
 trash %>% map_dbl( ~length(unique(.x)) )
 
+trash %>% select(matches("unit"))
 
 # drop all columns were all the values are the same (keep only those containing
 # multiple values)
@@ -80,6 +82,7 @@ trash %>%
   labs(x = "year"
        ,y = "trash")
 
+plotly::ggplotly()
 
 # assignment reminder -----------------------------------------------------
 
