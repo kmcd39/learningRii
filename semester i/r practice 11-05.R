@@ -3,6 +3,8 @@ library(tidyverse)
 
 # pull in data ------------------------------------------------------------
 
+# this was just bundled in r
+datasets::airquality
 airquality
 
 
@@ -220,11 +222,83 @@ airquality %>%
     alpha = .6
   )
 
-
-
-
 # time series -------------------------------------------------------------
 
 
 ## indexed with the different variables ------------
+
+
+
+# start with just a straightforward temp time series ----------------------
+
+# plot
+airquality %>%
+  ggplot(
+    aes(x = day
+        ,y = temp
+        ,color = month
+        ,group = month)
+  ) +
+  geom_path()
+
+
+# how do we create a date column?
+
+# ?airquality
+airquality <-
+  airquality %>%
+  mutate(date =
+           lubridate::ymd(
+             paste0("1973-", month, "-", day)
+           )
+  )
+
+month
+
+
+airquality %>%
+  ggplot(
+    aes( x = date
+        ,y = ozone
+        ,color = ozone)
+  ) +
+  geom_line()
+
+
+# add an index
+airquality
+
+head(airquality$temp, 1)
+
+airquality <-
+  airquality %>%
+  mutate(indexed.temp =
+           temp / head(temp, 1)
+         ,indexed.ozone =
+           ozone / head(ozone, 1)
+         )
+
+airquality %>%
+  select(date , indexed.ozone, indexed.temp) %>%
+  #select(date , ozone, temp) %>%
+  pivot_longer(
+    #matches("indexed")
+    #c(ozone, temp)
+    ) %>%
+  ggplot(
+    aes(
+      color = name
+      ,x = date
+      ,y = value
+    )
+  ) +
+  geom_path(
+    linewidth = .4
+  ) +
+  geom_smooth(
+    span = .09
+    ,se = F
+  )
+
+?airquality
 
