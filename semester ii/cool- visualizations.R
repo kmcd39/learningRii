@@ -21,6 +21,8 @@ sipri <-
 
 
 
+sipri
+
 ## peeks -------------------------------------------------------------------
 
 sipri
@@ -55,10 +57,14 @@ sipri <- sipri |>
 
 # where order tiv does not match weapon tiv
 sipri |>
-  filter(sipri.tiv.for.total.order != sipri.tiv.of.delivered.weapons) |>
-  select(1:5, matches("sipri.tiv"), everything()) |>
-  arrange(desc(sipri.tiv.for.total.order)) #|>
-  #View()
+  filter(sipri.tiv.for.total.order !=
+           sipri.tiv.of.delivered.weapons) |>
+  select(1:3,# :5,
+         matches("sipri.tiv"),
+         everything()) |>
+  arrange(desc(sipri.tiv.for.total.order)) # |> View()
+
+
 
 ## subsetting data ---------------------------------------------------------
 
@@ -69,7 +75,7 @@ sipri$year.of.order |> summary()
 
 
 sipri.trimmed <- sipri |>
-  filter(year.of.order > 2001)
+  filter(year.of.order > 2011)
 
 
 
@@ -658,11 +664,74 @@ recent.flows.w <-
 fmat <- as.matrix(recent.flows.w[,2:ncol(recent.flows.w)])
 row.names(fmat) <- recent.flows.w[[1]]
 
+
 chorddiag::chorddiag(
    fmat
   ,type =
     #"bipartite"
     "directional"
 )
+
+
+
+# questions in class ------------------------------------------------------
+
+sipri$year.of.order %>% range()
+total.recipients
+
+sipri %>% count()
+
+
+# let's zero in on india and pakistan (and sri lanka?) -------------------------------------
+
+# sipri %>% View()
+
+tmp <-
+  sipri %>%
+  filter(
+    grepl("India|Pakistan|Sri Lanka", recipient , ignore.case = T)
+      #grepl("India|Pakistan|sri lanka", supplier )
+            )
+
+tmp <- tmp %>%
+  filter(year.of.order >= 1970
+         )
+
+tmp %>% count(recipient)
+
+tmp %>% glimpse()
+tmp %>% colnames()
+
+tmp2 <-
+  tmp %>%
+  group_by(recipient, year.of.order
+           #,supplier
+           ) %>%
+  summarise(tot.tiv = sum(sipri.tiv.for.total.order)
+            ) %>%
+  ungroup()
+
+# what is happening in 2001?
+tmp %>%
+  filter(year.of.order == 2001
+         ) %>%
+  arrange(desc(sipri.tiv.for.total.order)
+          ) %>% View()
+
+
+tmp2 %>%
+  ggplot(
+    aes(
+       x = year.of.order
+      ,y = tot.tiv
+      ,color = recipient
+      )
+    ) +
+  geom_line()
+
+plotly::ggplotly()
+
+
+
 
 
