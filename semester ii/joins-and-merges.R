@@ -123,28 +123,106 @@ gdp %>%
 # plotly::ggplotly()
 
 
-
-
 # combining the datasets! ------------------------------------------------------------------
 
+
+
+## contribed join example --------------------------------------------------
+
+fake.data1 <-
+  tibble(
+     year  = 1995:2019 ,
+     trash = rnorm(25)
+  )
+
+fake.data2 <-
+  tibble(
+    year  = 2000:2024 ,
+    fast.fashion = rnorm(25, mean = 5, sd =2 )
+  )
+
+fake.data1
+fake.data2
+
+fake.data1 %>%
+  left_join(fake.data2,
+            by = c("year") )
+  tail()
 
 ## joining -----------------------------------------------------------------
 
 #' (here is where we left off!)
 
-lxp %>%
-  left_join(gdp)
-
-
-
-
-
-# what do we notice about the two datasets? (think about the column names, the
-# data structure.)
 lxp %>% glimpse()
 gdp %>% glimpse()
 
-# ...
+lxp %>% colnames()
+gdp %>% colnames()
+
+lxp %>% nrow()
+gdp %>% nrow()
+
+lxp %>% count(AGE, Age, SEX, Sex)
+
+lxp.prepped <- lxp %>%
+  filter(AGE == "Y0") %>%
+  filter(SEX == "F") %>%
+  select(REF_AREA, Reference.area
+         ,TIME_PERIOD,
+         "female.life.exp"  = OBS_VALUE
+         ,OBS_STATUS)
+
+gdp %>% count(SECTOR, Institutional.sector, TRANSACTION, Transaction)
+
+gdp.prepped <- gdp %>%
+  filter(SECTOR == "S14") %>%
+  filter(TRANSACTION == "P3_POP")  %>%
+  select(REF_AREA, Reference.area
+         ,TIME_PERIOD,
+        "hh.consumption"  = OBS_VALUE
+        ,OBS_STATUS)
+
+lxp.prepped %>%
+  select(REF_AREA, TIME_PERIOD) %>%
+  map(summary)
+
+gdp.prepped %>%
+  select(REF_AREA, TIME_PERIOD) %>%
+  map(summary)
+
+lxpgdp <- lxp.prepped %>%
+  full_join(
+    gdp.prepped,
+    by = c( "REF_AREA", "Reference.area"
+           ,"TIME_PERIOD" )
+      )
+
+lxpgdp %>%
+  filter(TIME_PERIOD == 2019) %>%
+  arrange((hh.consumption))
+
+lxpgdp <- lxpgdp %>%
+  arrange(REF_AREA, TIME_PERIOD)
+
+lxpgdp %>%
+  ggplot(
+    aes(y = female.life.exp
+        ,x = hh.consumption
+        ,color = REF_AREA =="ZAF"#  "USA"
+        ,label = TIME_PERIOD
+        ,group = REF_AREA
+        )
+  ) +
+  geom_point(size = .5
+             ,alpha = .5) +
+  geom_path() +
+  scale_color_manual(
+    values = c("grey60"
+               ,"red")
+  )
+
+plotly::ggplotly()
+
 
 
 #' They have identical column names.
