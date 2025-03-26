@@ -727,7 +727,11 @@ tmp2 %>%
       ,color = recipient
       )
     ) +
-  geom_line()
+  geom_line() +
+  geom_vline(xintercept = 2001
+             ,linetype = "dashed"
+             ,linewidth = .5
+             )
 
 plotly::ggplotly()
 

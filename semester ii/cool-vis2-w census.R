@@ -32,12 +32,13 @@ nycos %>% glimpse()
 cbsasf <-
   tigris::core_based_statistical_areas(
     year = 2021
-  ) %>%
+  ) |>
   rename_with(tolower)
 
+# install.packages("mapgl")
 #devtools::install_github("kmcd39/mapglview")
 cbsasf %>%
-  mapview(zcol = "name")
+   mapglview::mapglview(zcol = "name")
 
 # (where are cbsasfps == NA?)
 nycos %>%

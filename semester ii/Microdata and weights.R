@@ -81,7 +81,7 @@ state.populations
 
 # -------------------------------------------------------------------------
 
-# peek at avialbel microdata variables
+# peek at available microdata variables
 tidycensus::pums_variables %>%
   filter(year == 2022) %>%
   filter(survey == "acs1") %>%
