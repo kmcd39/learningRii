@@ -4,7 +4,6 @@ getwd()
 
 # read in initial data ----------------------------------------------------
 
-
 list.files("local-data/semester i/")
 
 # paste together the directory and the filename to make the path to the file
@@ -110,26 +109,103 @@ subway %>%
              )
 
 
+## build intution for group_by by comparing with filter --------------------
+
+subway %>% count(reporting_category)
+subway %>% count(year)
+
+# let's filter to look at delays by a single category - how many total delays?
 subway %>%
-  group_by(year,
-           reporting_category == "Crew Availability"
+  filter(reporting_category == "Police & Medical") %>%
+  filter(year == 2024) %>%
+  pull(delays) %>%
+  sum()
+
+# okay great! we got the total delays for a given category -- and we could
+# revise it to get to a given year too.
+
+# if we want to look at all the categories -- instead of filtering to each one
+# -- we can just group by category.
+subway %>%
+  group_by( year
+           ,reporting_category
            ) %>%
-  summarise( n.rows = n() ,
-             n.delays = sum(delays)
+  summarise( delays = sum(delays)
+             )
+
+# behind the hood of that `count` command -- is actually a group by summarise
+subway %>% count(year,reporting_category)
+
+subway %>%
+  group_by( year
+            ,reporting_category
+  ) %>%
+  summarise(
+    n = n()
+    ,delays = sum(delays)
+  )
+
+# an ungroup summarise:
+subway %>%
+  summarise(
+    n = n()
+    ,delays = sum(delays)
   )
 
 
-subway %>%
-  group_by(month, reporting_category,
-        subcategory, division, line,
-        day_type
-        ) %>%
-  summarise( n.rows = n() ,
-             n.delays = sum(delays)
-  ) %>%
-  ungroup() %>%
-  arrange(desc(n.rows))
+## and a "tidyverse" vs base R refresher -----------------------------------
 
+# the base R equivalant of that first tidyverse command we did with the filters:
+
+# (looking again at the tidyverse way:)
+subway %>%
+  filter(reporting_category == "Police & Medical") %>%
+  pull(delays) %>%
+  sum()
+
+# now, base R:
+sum(subway[subway$reporting_category == "Police & Medical", ]$delays )
+
+
+
+# let's think of a question or two that we're interested in ---------------
+
+subway %>% glimpse()
+
+#' how many delays due to police activity?
+#'
+#' which lines are the least reliable (most delays?)
+
+
+
+# police activity and delays ----------------------------------------------
+
+subway %>%
+  filter(reporting_category ==
+           "Police & Medical"
+         ) %>%
+  filter(subcategory ==
+           "Public Conduct, Crime, Police Response"
+         ) %>%
+  group_by(year) %>%
+  summarise(delays = sum(delays)
+            )
+
+# that's great--- it gives us total -- but CONTEXT is key!!!! So let's look at
+# percent of whole as well
+subway %>%
+  mutate(from.policy.activity =
+           reporting_category ==
+           "Police & Medical" &
+           subcategory ==
+           "Public Conduct, Crime, Police Response"
+           ) %>%
+  group_by(year, from.policy.activity) %>%
+  summarise(delays = sum(delays)
+  ) %>%
+  mutate(percent =
+           100 * delays / sum(delays)
+         )
 
 
 # teaser! where we'll soon get to -----------------------------------------
