@@ -1,10 +1,11 @@
 
-getwd()
-
 
 # read in initial data ----------------------------------------------------
 
 list.files("local-data/semester i/")
+
+# downloaded from:
+# https://data.ny.gov/Transportation/MTA-Subway-Major-Incidents-2020-2024/j6d2-s8m2/about_data
 
 # paste together the directory and the filename to make the path to the file
 path <- paste0(
@@ -193,23 +194,72 @@ subway %>%
 
 # that's great--- it gives us total -- but CONTEXT is key!!!! So let's look at
 # percent of whole as well
-subway %>%
+delays.from.police.activity <-
+  subway %>%
   mutate(from.policy.activity =
            reporting_category ==
            "Police & Medical" &
            subcategory ==
            "Public Conduct, Crime, Police Response"
-           ) %>%
+  ) %>%
   group_by(year, from.policy.activity) %>%
   summarise(delays = sum(delays)
   ) %>%
   mutate(percent =
            100 * delays / sum(delays)
-         )
+  ) %>%
+  ungroup()
+
+delays.from.police.activity
+
+## let's make a plot -------------------------------------------------------
+
+# original scatter plot
+delays.from.police.activity %>%
+  ggplot(
+    aes( x = percent
+         ,y = year
+         ,color = from.policy.activity
+    )
+  ) +
+  geom_point()
+
+
+# second plot: using columns or bars
+delays.from.police.activity %>%
+  ggplot(
+    aes( x = percent
+        ,y = factor(year)
+        ,fill = from.policy.activity
+        )
+  ) +
+  geom_col()
+
+
+
+## total delays by category ------------------------------------------------
+
+subway %>%
+  group_by(year, reporting_category) %>%
+  summarise(total.delays = sum(delays)
+            ) %>%
+  ggplot(
+    aes(
+     y = reorder(reporting_category, total.delays)
+    ,x = total.delays
+    ,fill = reporting_category
+    )
+  ) +
+  geom_col() +
+  labs(y = "category"
+       ,x = "total delays"
+       ) +
+  facet_wrap(vars(year))
+
+
 
 
 # teaser! where we'll soon get to -----------------------------------------
-
 
 subway %>%
   group_by(year,
@@ -227,3 +277,6 @@ subway %>%
     linewidth = 1.3
   ) +
   scale_color_brewer(type = "qual")
+
+
+
